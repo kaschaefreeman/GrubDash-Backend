@@ -16,8 +16,8 @@ const nextId = require("../utils/nextId");
  * If the specified property name exists in the body, as value to res locals.
  * If not, return 400
  */
-const bodyHasData = (propertyName) => {
-  return (req, res, next) => {
+function bodyHasData(propertyName){
+  return function(req, res, next){
     const { data = {} } = req.body;
     if (data[propertyName]) {
       res.locals[propertyName] = data[propertyName];
@@ -32,7 +32,7 @@ const bodyHasData = (propertyName) => {
  * Checks if the value of name property in request body is not ""
  * Function is to be called on PUT and POST requests
  */
-const validateName = (req, res, next) => {
+function validateName(req, res, next){
   const { data: { name } = {} } = req.body;
   name.length
     ? next()
@@ -42,7 +42,7 @@ const validateName = (req, res, next) => {
  * Checks if the value of description property in request body is not ""
  * Function is to be called on PUT and POST requests
  */
-const validateDescription = (req, res, next) => {
+function validateDescription (req, res, next){
   const { data: { description } = {} } = req.body;
   description.length
     ? next()
@@ -52,7 +52,7 @@ const validateDescription = (req, res, next) => {
  * Checks if the value of price property in request body is greater than 0 and is an integer
  * Function is to be called on PUT and POST requests
  */
-const validatePrice = (req, res, next) => {
+function validatePrice(req, res, next){
   const { data: { price } = {} } = req.body;
   price > 0 && Number.isInteger(price)
     ? next()
@@ -65,7 +65,7 @@ const validatePrice = (req, res, next) => {
  * Checks if the value of image_url property in request body is not ""
  * Function is to be called on PUT and POST requests
  */
-const validateImageUrl = (req, res, next) => {
+function validateImageUrl(req, res, next){
   const { data: { image_url } = {} } = req.body;
   image_url.length
     ? next()
@@ -78,7 +78,7 @@ const validateImageUrl = (req, res, next) => {
  * Request will not complete if data and route id's do not match. 
  * It is to be noted that there may not be an id given in the data.  However, the request can still be completed if it is not given
  */
-const dishIdMatches = (req, res, next) => {
+function dishIdMatches(req, res, next){
   const { dishId } = req.params;
   const { data: { id } = {} } = req.body;
   //if dishId from params and id from request body match, or there wasn't an id given in the request body go to next function.  Else, return 400
@@ -97,7 +97,7 @@ const dishIdMatches = (req, res, next) => {
 /**
  * Checks if dish exists with id of the dishId parameter given in route
  */
-const dishExists = (req, res, next) => {
+function dishExists(req, res, next){
   const { dishId } = req.params;
   const foundDish = dishes.find(({ id }) => id === dishId);
   if (foundDish) {
@@ -110,11 +110,11 @@ const dishExists = (req, res, next) => {
 
 //**   CRUDL Functions   **//
 
-const list = (req, res, next) => {
+function list(req, res, next){
   res.json({ data: dishes });
 };
 
-const create = (req, res, next) => {
+function create(req, res, next){
   const { name, price, description, image_url } = res.locals;
   const newDish = {
     id: nextId(),
@@ -128,12 +128,12 @@ const create = (req, res, next) => {
 };
 
 
-const read = (req, res, next) => {
+function read(req, res, next){
   const { dish } = res.locals;
   res.json({ data: dish });
 };
 
-const update = (req, res, next) => {
+function update(req, res, next){
   const { dish } = res.locals;
   const { data: { name, description, price, image_url } = {} } = req.body;
   dish.name = name;
@@ -143,7 +143,7 @@ const update = (req, res, next) => {
   res.json({ data: dish });
 };
 
-const destroy = (req, res, next) => {
+function destroy(req, res, next){
   const { dishId } = req.params;
   const index = dishes.findIndex((dish) => dishId === dish.id);
   const deletedDish = dishes.splice(index, 1);

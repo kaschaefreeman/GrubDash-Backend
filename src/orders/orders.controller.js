@@ -16,8 +16,8 @@ const nextId = require("../utils/nextId");
  * If the specified property name exists in the body, as value to res locals.
  * If not, return 400
  */
-const bodyHasData = (propertyName) => {
-  return (req, res, next) => {
+function bodyHasData (propertyName) {
+  return function(req, res, next){
     const { data = {} } = req.body;
     if (data[propertyName]) {
       res.locals[propertyName] = data[propertyName];
@@ -32,7 +32,7 @@ const bodyHasData = (propertyName) => {
  * Checks if the value of DeliverTo property in request body is not ""
  * Function is to be called on PUT and POST requests
  */
-const validateDeliverTo = (req, res, next) => {
+function validateDeliverTo (req, res, next) {
   const { data: { deliverTo } = {} } = req.body;
   deliverTo.length
     ? next()
@@ -43,7 +43,7 @@ const validateDeliverTo = (req, res, next) => {
  * Checks if the value of mobileNumber property in request body is not ""
  * Function is to be called on PUT and POST requests
  */
-const validateMobileNumber = (req, res, next) => {
+function validateMobileNumber (req, res, next) {
   const { data: { mobileNumber } = {} } = req.body;
   mobileNumber.length
     ? next()
@@ -55,7 +55,7 @@ const validateMobileNumber = (req, res, next) => {
  * Checks if the value of Dishes property in request body is an array and is not empty
  * Function is to be called on PUT and POST requests
  */
-const validateDishes = (req, res, next) => {
+function validateDishes (req, res, next) {
   const { data: { dishes } = {} } = req.body;
   dishes.length && Array.isArray(dishes)
     ? next()
@@ -66,7 +66,7 @@ const validateDishes = (req, res, next) => {
  * Checks if the quantity of the Dish array in request body is an integer and is greater than 0
  * Function is to be called on PUT and POST requests
  */
-const validateDishQuantity = (req, res, next) => {
+function validateDishQuantity (req, res, next) {
   //call local dishes array added from bodyHasData function
   const { dishes } = res.locals;
   //find the index of the dishes array where the quantity is not an integer or the quantity was less than zero
@@ -88,7 +88,7 @@ const validateDishQuantity = (req, res, next) => {
  * Request will not complete if data and route id's do not match. 
  * It is to be noted that there may not be an id given in the data.  However, the request can still be completed if it is not given
  */
-const orderIdMatches = (req, res, next) => {
+function orderIdMatches (req, res, next) {
   //get the orderId parameter from the route
   const { orderId } = req.params;
   //get the data id from the request body
@@ -108,7 +108,7 @@ const orderIdMatches = (req, res, next) => {
 /**
  * Checks the status on an order in a PUT request to see if the status is not delivered and is one of "pending", "preparing", or "out-for-delivery"
  */
-const validateStatusForUpdate = (req, res, next) => {
+function validateStatusForUpdate (req, res, next) {
   const validStatus = ["pending", "preparing", "out-for-delivery"];
   const { status } = res.locals;
   if (status === "delivered")
@@ -127,7 +127,7 @@ const validateStatusForUpdate = (req, res, next) => {
  * Checks if orderId given in request parameters exists in the orders data. 
  * Function is to be called on GET and DELETE request on a route with orderId parameter
  */
-const orderExists = (req, res, next) => {
+function orderExists (req, res, next){
   const { orderId } = req.params;
   const foundOrder = orders.find(({ id }) => id === orderId);
   if (foundOrder) {
@@ -143,7 +143,7 @@ const orderExists = (req, res, next) => {
  * Function to be called on DELETE request.  
  * Orders can only be deleted if status is pending
  */
-const checkStatusIsPending = (req, res, next) => {
+function checkStatusIsPending (req, res, next) {
   const { order } = res.locals;
   order.status === "pending"
     ? next()
@@ -155,11 +155,11 @@ const checkStatusIsPending = (req, res, next) => {
 
 //**   CRUDL Functions   **//
 
-const list = (req, res, next) => {
+function list(req, res, next){
   res.json({ data: orders });
 };
 
-const create = (req, res, next) => {
+function create(req, res, next){
   const { deliverTo, mobileNumber, dishes } = res.locals;
   const newOrder = {
     id: nextId(),
@@ -172,12 +172,12 @@ const create = (req, res, next) => {
   res.status(201).json({ data: newOrder });
 };
 
-const read = (req, res, next) => {
+function read(req, res, next){
   const { order } = res.locals;
   res.status(200).json({ data: order });
 };
 
-const update = (req, res, next) => {
+function update(req, res, next){
   const { order } = res.locals;
   const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
   order.deliverTo = deliverTo;
@@ -187,7 +187,7 @@ const update = (req, res, next) => {
   res.status(200).json({ data: order });
 };
 
-const destroy = (req, res, next) => {
+function destroy(req, res, next){
   const { orderId } = req.params;
   const index = orders.findIndex(({ id }) => id === orderId);
   const deletedOrder = orders.splice(index, 1);
